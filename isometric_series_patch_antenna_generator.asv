@@ -94,13 +94,11 @@
 
 % End struct definitions
 
-function [CSX ports] = isometric_series_patch_antenna_generator(CSX, as)
+function CSX = series_patch_generate(CSX, as)
 
     CSX = AddMaterial(CSX, 'substrate');
     CSX = SetMaterialProperty(CSX, 'substrate', 'Epsilon', as.substrate.epsR, 'Kappa', as.substrate.kappa);
 
-    CSX = AddMetal(CSX, 'isometric_series_patch');
-    
     thickness = as.cu_thickness;
     fc = as.fc;
     
@@ -118,28 +116,23 @@ function [CSX ports] = isometric_series_patch_antenna_generator(CSX, as)
     parallel_spacing = as.parallel_spacing;
     
     translation = as.start_pos;
-    
-    for p = 0:parallel-1
+
+    for p = 0:parallel
         % Feed geometry
-        start = [0 p*parallel_spacing-feed_width/2 0] + translation;
+        start = [0 parallel_spacing 0] + translation;
         stop = start + [feed_length feed_width thickness];
         CSX = AddBox(CSX, 'isometric_series_patch', 10, start, stop);
-        [CSX, ports.p] = AddLumpedPort(CSX, 5, p, as.feed.R, start, stop, [1 0 0], true);
-        
-        for s = 0:series-1
+        [CSX, port] = AddLumpedPort(CSX, 5, 1, as.feed.R, start, stop, [1 0 0], true);
+        for s = 0:series
             % Pad element
-            start = [feed_length+(s*pad_length+s*interconnect_length) (feed_width/2-pad_width/2)+p*parallel_spacing 0]+translation;
+            start = [feed.length+(s*pad_length) (feed_width/2-pad_width/2)+parallel_spacing 0]+translation;
             stop = start+[pad_length pad_width thickness];
             CSX = AddBox(CSX, 'isometric_series_patch', 10, start, stop);
 
-            if s==series-1
-                % Do nothing
-            else
-                % Interconnect
-                start = [feed_length+((s+1)*pad_length)+(s*interconnect_length) (feed_width/2-interconnect_width/2)+p*parallel_spacing 0]+translation;
-                stop = start+[interconnect_length interconnect_width thickness];
-                CSX = AddBox(CSX, 'isometric_series_patch', 10, start, stop);
-            end
+            % Interconnect
+            start = [feed.length+((s+1)*pad_length) (feed_width/2-interconnect_width/2)+parallel_spacing 0]+translation;
+            stop = start+[interconnect_length interconnect_width thickness];
+            CSX = AddBox(CSX, 'isometric_series_patch', 10, start, stop);
         end
     end
 end
