@@ -38,7 +38,7 @@ FDTD = SetGaussExcite(FDTD,as.f_start,as.f_end);
 BC = {'MUR' 'MUR' 'MUR' 'MUR' 'MUR' 'MUR'};
 FDTD = SetBoundaryCond(FDTD,BC);
 
-[CSX, port, mesh] = isometric_series_patch_antenna_generator(as);
+[CSX, port, mesh, SimBox] = isometric_series_patch_antenna_generator(as);
 
 %start = [mesh.x(4) mesh.y(4) mesh.z(4)];
 %stop = [mesh.x(end-3) mesh.y(end-3) mesh.z(end-3)];

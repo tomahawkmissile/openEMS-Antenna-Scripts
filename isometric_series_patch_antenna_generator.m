@@ -96,7 +96,7 @@
 
 % End struct definitions
 
-function [CSX, port, mesh] = isometric_series_patch_antenna_generator(as)
+function [CSX, port, mesh, SimBox] = isometric_series_patch_antenna_generator(as)
 
     physical_constants;
 
@@ -150,27 +150,27 @@ function [CSX, port, mesh] = isometric_series_patch_antenna_generator(as)
     CSX = AddBox(CSX, 'substrate', 1, start, stop);
 
     CSX = AddMetal(CSX, 'groundplane');
-    start = [-substrate_width/2 -substrate_length/2 substrate_thickness];
-    stop = [substrate_width/2 substrate_length/2 substrate_thickness];
+    start = [-substrate_width/2 -substrate_length/2 0];
+    stop = [substrate_width/2 substrate_length/2 0];
     CSX = AddBox(CSX, 'groundplane', 10, start, stop);
     
     CSX = AddMetal(CSX, 'pads');
     
     for p = 0:parallel-1
         % Feed geometry
-        start = [0 p*parallel_spacing 0] + translation;
+        start = [0 p*parallel_spacing substrate_thickness] + translation;
         stop = start + [feed_length feed_width thickness];
         CSX = AddBox(CSX, 'pads', 10, start, stop);
         [CSX port{p+1}] = AddLumpedPort(CSX, 999, p+1, R, start, start+[0.01 feed_width thickness], [1 0 0], true);
         
         for s = 0:series-1
             % Interconnect
-            start = [feed_length+((s)*pad_length)+(s*interconnect_length) (feed_width/2-interconnect_width/2)+p*parallel_spacing 0]+translation;
+            start = [feed_length+((s)*pad_length)+(s*interconnect_length) (feed_width/2-interconnect_width/2)+p*parallel_spacing substrate_thickness]+translation;
             stop = start+[interconnect_length interconnect_width thickness];
             CSX = AddBox(CSX, 'pads', 10, start, stop);
             
             % Pad element
-            start = [feed_length+(s*pad_length+(s+1)*interconnect_length) (feed_width/2-pad_width/2)+p*parallel_spacing 0]+translation;
+            start = [feed_length+(s*pad_length+(s+1)*interconnect_length) (feed_width/2-pad_width/2)+p*parallel_spacing substrate_thickness]+translation;
             stop = start+[pad_length pad_width thickness];
             CSX = AddBox(CSX, 'pads', 10, start, stop);
         end
