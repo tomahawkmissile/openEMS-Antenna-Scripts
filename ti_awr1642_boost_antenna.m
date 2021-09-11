@@ -43,6 +43,7 @@ pad.width = 1.5;
 pad.spacing = 1.18;
 feed.width = 0.1;
 feed.length = 1;
+cu.thickness = 0.035;
 
 f_start = 77e9;
 f0 = 79e9;
@@ -56,7 +57,9 @@ feed.R = 50;
 
 SimBox = [substrate.width*2 substrate.length*2 150];
 
-FDTD = InitFDTD('NrTs',10000);
+max_res = c0/f0/unit/20;
+
+FDTD = InitFDTD('NrTs',100000);
 FDTD = SetGaussExcite(FDTD,f0,fc);
 BC = {'MUR' 'MUR' 'MUR' 'MUR' 'MUR' 'MUR'};
 FDTD = SetBoundaryCond(FDTD,BC);
@@ -85,35 +88,35 @@ translation = [0 0 0]; %translate the antenna in space if needed
 CSX = AddMetal(CSX, 'pads');
 
 start = [0 -0.05 0]+translation;
-stop = start+[1 0.1 0];
+stop = start+[1 0.1 -cu.thickness];
 CSX = AddBox(CSX, 'pads', 10, start, stop); %feed element
 
 start = [1 -0.75 0]+translation;
-stop = start+[0.97 1.5 0];
+stop = start+[0.97 1.5 -cu.thickness];
 CSX = AddBox(CSX, 'pads', 10, start, stop); %first patch
 
 start = [1+0.97 -0.05 0]+translation;
-stop = start+[1.18 0.1 0];
+stop = start+[1.18 0.1 -cu.thickness];
 CSX = AddBox(CSX, 'pads', 10, start, stop); %first connector
 
 start = [1+0.97+1.18 -0.75 0]+translation;
-stop = start+[0.97 1.5 0];
+stop = start+[0.97 1.5 -cu.thickness];
 CSX = AddBox(CSX, 'pads', 10, start, stop); %second patch
 
 start = [1+0.97+1.18+0.97 -0.05 0]+translation;
-stop = start+[1.18 0.1 0];
+stop = start+[1.18 0.1 -cu.thickness];
 CSX = AddBox(CSX, 'pads', 10, start, stop); %second connector
 
 start = [1+0.97+1.18+0.97+1.18 -0.75 0]+translation;
-stop = start+[0.97 1.5 0];
+stop = start+[0.97 1.5 -cu.thickness];
 CSX = AddBox(CSX, 'pads', 10, start, stop); %third patch
 
 start = [1+0.97+1.18+0.97+1.18+0.97 -0.05 0]+translation;
-stop = start+[1.18 0.1 0];
+stop = start+[1.18 0.1 -cu.thickness];
 CSX = AddBox(CSX, 'pads', 10, start, stop); %third connector
 
 start = [1+0.97+1.18+0.97+1.18+0.97+1.18 -0.75 0]+translation;
-stop = start+[0.97 1.5 0];
+stop = start+[0.97 1.5 -cu.thickness];
 CSX = AddBox(CSX, 'pads', 10, start, stop); %fourth patch
 
 patch_mesh = DetectEdges(CSX, [], 'SetProperty', 'patch');
@@ -121,11 +124,11 @@ mesh.x = [mesh.x SmoothMeshLines(patch_mesh.x, 0.5)];
 mesh.y = [mesh.y SmoothMeshLines(patch_mesh.y, 0.5)];
 
 start = [0 -0.05 0]+translation;
-stop = start+[0.01 0.1 0];
-[CSX, port] = AddLumpedPort(CSX, 5, 1, feed.R, start, stop, [1 0 0], true);
+stop = start+[0.01 0.1 -cu.thickness];
+[CSX, port] = AddLumpedPort(CSX, 5, 1, feed.R, start, stop, [0 0 1], true);
 
 mesh = DetectEdges(CSX,mesh);
-mesh = SmoothMesh(mesh, c0/f0/unit/20);
+mesh = SmoothMesh(mesh, max_res);
 CSX = DefineRectGrid(CSX, unit, mesh);
 
 start = [mesh.x(4) mesh.y(4) mesh.z(4)];
@@ -133,7 +136,7 @@ stop = [mesh.x(end-3) mesh.y(end-3) mesh.z(end-3)];
 
 [CSX nf2ff] = CreateNF2FFBox(CSX, 'nf2ff', start, stop);
 
-Sim_Path = 'tmp_patch';
+Sim_Path = 'tmp';
 Sim_CSX = 'patch.xml';
 
 WriteOpenEMS([Sim_Path '/' Sim_CSX], FDTD, CSX);

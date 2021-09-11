@@ -6,13 +6,23 @@ clc
 
 physical_constants;
 unit = 1e-3;
+as.unit=unit;
 
-as.substrate.thickness = 1.6;
-as.substrate.length = 100;
-as.substrate.width = 50;
+as.series_count = 8;
+as.parallel_count = 8;
+as.parallel_spacing = 2.5;
+as.f_start = 77e9;
+as.fc = 79e9;
+as.f_end = 81e9;
+as.cu_thickness = 0.035;
+as.start_pos = [0 0 0];
+
+as.substrate.thickness = 0.1;
+as.substrate.length = 120;
+as.substrate.width = 100;
 as.substrate.cells = 4;
 as.substrate.epsR = 4.4;
-as.substrate.kappa = 1;
+as.substrate.kappa = 0.0027*2*pi*as.fc * EPS0*as.substrate.epsR;
 
 as.pad.length = 0.97;
 as.pad.width = 1.5;
@@ -23,35 +33,23 @@ as.feed.R = 50;
 as.feed.length = 1;
 as.feed.width = 0.1;
 
-as.series_count = 8;
-as.parallel_count = 8;
-as.parallel_spacing = 2.5;
-as.fc = 79e9;
-as.cu_thickness = 0.035;
-as.start_pos = [0 0 0];
+FDTD = InitFDTD('NrTs',10000);
+FDTD = SetGaussExcite(FDTD,as.f_start,as.f_end);
+BC = {'MUR' 'MUR' 'MUR' 'MUR' 'MUR' 'MUR'};
+FDTD = SetBoundaryCond(FDTD,BC);
 
-SimBox = [as.substrate.width*2 as.substrate.length*2 200];
+[CSX, port, mesh] = isometric_series_patch_antenna_generator(as);
 
-CSX = InitCSX();
-mesh.x = [-SimBox(1)/2 SimBox(1)/2];
-mesh.y = [-SimBox(2)/2 SimBox(2)/2];
-mesh.z = [-SimBox(3)/2 SimBox(3)/2];
+%start = [mesh.x(4) mesh.y(4) mesh.z(4)];
+%stop = [mesh.x(end-3) mesh.y(end-3) mesh.z(end-3)];
+[CSX, nf2ff] = CreateNF2FFBox(CSX, 'nf2ff', -SimBox/2, SimBox/2);
 
-[CSX ports] = isometric_series_patch_antenna_generator(CSX,as);
-
-patch_mesh = DetectEdges(CSX, [], 'SetProperty', 'patch');
-mesh.x = [mesh.x SmoothMeshLines(patch_mesh.x, 0.5)];
-mesh.y = [mesh.y SmoothMeshLines(patch_mesh.y, 0.5)];
-
-mesh = DetectEdges(CSX,mesh);
-mesh = SmoothMesh(mesh, c0/as.fc/unit/20);
-CSX = DefineRectGrid(CSX, unit, mesh);
-
-FDTD = InitFDTD();
-
-Sim_Path =  'tmp_generator';
+Sim_Path =  'C:\Users\tomah\OneDrive\Documents\MATLAB\tmp';
 Sim_CSX = 'generated.xml';
 
 WriteOpenEMS([Sim_Path '/' Sim_CSX], FDTD, CSX);
 
 CSXGeomPlot([Sim_Path '/' Sim_CSX]);
+
+RunOpenEMS(Sim_Path, Sim_CSX);
+
