@@ -53,7 +53,7 @@ feed.R = 50; % feed resistance
 SimBox = [50+substrate.width 50+substrate.length 25];
 
 %% prepare simulation folder
-Sim_Path = 'tmp';
+Sim_Path = append(char(pwd),'/tmp');
 Sim_CSX = 'patch_array.xml';
 if (postprocessing_only==0)
     [status, message, messageid] = rmdir( Sim_Path, 's' ); % clear previous directory

@@ -136,8 +136,8 @@ stop = [mesh.x(end-3) mesh.y(end-3) mesh.z(end-3)];
 
 [CSX nf2ff] = CreateNF2FFBox(CSX, 'nf2ff', start, stop);
 
-Sim_Path = 'tmp';
-Sim_CSX = 'patch.xml';
+Sim_Path = append(char(pwd),'/tmp');
+Sim_CSX = 'generated.xml';
 
 WriteOpenEMS([Sim_Path '/' Sim_CSX], FDTD, CSX);
 

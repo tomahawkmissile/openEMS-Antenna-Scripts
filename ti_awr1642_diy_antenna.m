@@ -110,7 +110,7 @@ start = [mesh.x(4) mesh.y(4) mesh.z(4)];
 stop = [mesh.x(end-3) mesh.y(end-3) mesh.z(end-3)];
 [CSX, nf2ff] = CreateNF2FFBox(CSX, 'nf2ff', start, stop);
 
-Sim_Path =  'C:\Users\tomah\OneDrive\Documents\MATLAB\out\tmp';
+Sim_Path = append(char(pwd),'/tmp');
 Sim_CSX = 'generated.xml';
 
 [status, message, messageid] = rmdir( Sim_Path, 's' ); % clear previous directory
